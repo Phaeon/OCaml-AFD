@@ -113,12 +113,17 @@ let rec trouver_predecesseur etat trans = match trans with
 	[] -> false
 	| (c, e)::r -> if e = etat then true else trouver_predecesseur etat r ;;
 
-(* PROBLEME : 
+(* PROBLEM : 
 	Transform 	(0,[(S 'a',0);(S 'b',1)])  	 into ->       (0, [(Concat (S 'b', Concat (Etoile (S 'b'), S 'a')), 2)
 	
 	So I transform the eliminated state into a list, so I get (1,[(S 'b',1);(S 'a',2)]) -> [(Etoile(S 'b'),1);(S 'a', 2)] with the function trans_etat_supp
-	and I use that list to transform the state 0 but the problem is essentially is there is more than one transition in the state 1. I don't know how to treat
-	this problem as in general as I can.
+	and I use that list to transform the state 0 but the problem is essentially if there is more than one transition in the state 1. I don't know how to treat
+	this problem as generaly as I can.
+	
+	I use the function afd_sans_etat_elim in order to get the AFD without the eliminated state.
+	
+	Maybe I do it all the wrong way but I believe I have to transform the eliminated state first and then study the other states and find if there are any predecessors
+	so that I can obtain a graph (AFD) withtout that state.
 
 *)
 let rec transformer_etat trans = match trans with
