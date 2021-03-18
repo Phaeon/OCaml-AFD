@@ -24,16 +24,6 @@ type expr_reg = Vide
 		==> Expressions régulières
 *)
 
-
-(*
-	Elimination d'états
-	
-	1. Pour chaque état final f, supprimer tous les états sauf q0 (état initial)
-et f
-	2. Si q0 /= f alors l'AFD aura deux états, sinon un seul état à la fois initial et acceptant
-	3. ER : Union des chaînes acceptés par chaque état
-*)
-
 (* 	FONCTIONS UTILES
 
   - List.mem : Vérifier l'appartenance d'un élément à une liste
@@ -113,40 +103,29 @@ let rec afd_sans_etat_elim etat graphe = match graphe with
 
 let sans_1 = afd_sans_etat_elim 1 trans_gene ;;
 
-
-
-(* 
-
-trans_modif_etat : (expr_reg * int) list =
-  [(Etoile (S 'b'), 1); (S 'a', 2)]
-
-[(0, [(S 'a', 0); (S 'b', 1)]);   
-(2, [(S 'a', 2); (S 'b', 3)]); 
-(3, [(S 'a', 0); (S 'b', 3)])]
-
-Ma façon de faire :
-
-- Récupérer l'AFD sans l'état que l'on souhaite supprimer
-- Transformer les transitions de l'état que l'on souhaite supprimer
-- Pour chaque état :
-	- Regarder chaque fonction de transition, si l'état 'arrivant' est l'état que l'on supprime,
-	alors on applique les transformations sur la fonction de transition, en concaténation avec les
-	transitions de l'état supprimé
-
-e.g. Pour l'état 0, il y a la transition (S 'b', 1), et on a, pour l'état 1 : [(Etoile (S 'b'), 1); (S 'a', 2)], on aurait donc pour cette fonction de transition, la suivante :
-	Concat (S 'b', Concat(Etoile(S 'b'), S 'a'))
-
-
+(* Fonction annexe : Trouver la fonction de transition qui correspond à l'état éliminé, dans les prédecesseurs de l'état
+	i.e. On a [(0,[('a',0);('b',1)]); <- L'ÉTAT 0 EST UN PREDECESSEUR
+		(1,[('b',1);('a',2)]); <- ON SOUHAITE ELIMINER CET ETAT
+		(2,[('a',2);('b',3)]);
+		(3,[('a',0);('b',3)])]
 *)
-
 let rec trouver_predecesseur etat trans = match trans with
 	[] -> false
 	| (c, e)::r -> if e = etat then true else trouver_predecesseur etat r ;;
 
+(* PROBLEME : 
+	Transform 	(0,[(S 'a',0);(S 'b',1)])  	 into ->       (0, [(Concat (S 'b', Concat (Etoile (S 'b'), S 'a')), 2)
+	
+	So I transform the eliminated state into a list, so I get (1,[(S 'b',1);(S 'a',2)]) -> [(Etoile(S 'b'),1);(S 'a', 2)] with the function trans_etat_supp
+	and I use that list to transform the state 0 but the problem is essentially is there is more than one transition in the state 1. I don't know how to treat
+	this problem as in general as I can.
+
+*)
 let rec transformer_etat trans = match trans with
 	[] -> []
 	| 
 
+(* Eliminer un état et renoyer le graphe correspondant *)
 let rec eliminer_un_etat etat graphe = 
 	let graphe_bis = afd_sans_etat_elim etat graphe in
 		match graphe_bis with
@@ -157,7 +136,6 @@ let rec eliminer_un_etat etat graphe =
 
 eliminer_un_etat 1 trans_gene ;;
 
-(* eliminer_un_etat 1 trans_gene ;;
 
 
 (* 4. Réduire un graphe à un état initial et un état final et retourner l'expression régulière *)
