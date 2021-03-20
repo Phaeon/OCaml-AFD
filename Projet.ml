@@ -103,32 +103,33 @@ let rec afd_sans_etat_elim etat graphe = match graphe with
 
 let sans_1 = afd_sans_etat_elim 1 trans_gene ;;
 
-(* Fonction annexe : Trouver la fonction de transition qui correspond à l'état éliminé, dans les prédecesseurs de l'état
-	i.e. On a [(0,[('a',0);('b',1)]); <- L'ÉTAT 0 EST UN PREDECESSEUR
-		(1,[('b',1);('a',2)]); <- ON SOUHAITE ELIMINER CET ETAT
-		(2,[('a',2);('b',3)]);
-		(3,[('a',0);('b',3)])]
-*)
+(* Fonction annexe : Trouver la fonction de transition qui correspond à l'état éliminé, dans les prédecesseurs de l'état*)
 let rec trouver_predecesseur etat trans = match trans with
 	[] -> false
 	| (c, e)::r -> if e = etat then true else trouver_predecesseur etat r ;;
 
-(* PROBLEM : 
-	Transform 	(0,[(S 'a',0);(S 'b',1)])  	 into ->       (0, [(Concat (S 'b', Concat (Etoile (S 'b'), S 'a')), 2)
-	
-	So I transform the eliminated state into a list, so I get (1,[(S 'b',1);(S 'a',2)]) -> [(Etoile(S 'b'),1);(S 'a', 2)] with the function trans_etat_supp
-	and I use that list to transform the state 0 but the problem is essentially if there is more than one transition in the state 1. I don't know how to treat
-	this problem as generaly as I can.
-	
-	I use the function afd_sans_etat_elim in order to get the AFD without the eliminated state.
-	
-	Maybe I do it all the wrong way but I believe I have to transform the eliminated state first and then study the other states and find if there are any predecessors
-	so that I can obtain a graph (AFD) withtout that state.
-
-*)
-let rec transformer_etat trans = match trans with
+(* Fonction annexe : Extraire des couples les transitions transformées (transitions de l'état supprimé vers l'état lui-même) *)
+let rec meme_etat_trans etat trans_extrait = match trans_extrait with
 	[] -> []
-	| 
+	| (t, e)::r -> if e = etat then (t, e)::(meme_etat_trans etat r) else meme_etat_trans etat r
+;;
+
+(* Fonction annexe : Extraire des couples les transitions non-transformées (transitions de l'état supprimé vers un autre état) *)
+let rec diff_etat_trans etat trans_extrait = match trans_extrait with
+	[] -> []
+	| (t, e)::r -> if e = etat then diff_etat_trans etat r else (t, e)::(diff_etat_trans etat r)
+;;
+
+(* Fonction annexe : Transformer les modifications d'un état prédecesseur *)
+let transformer_etat trans = match trans with
+	[] -> []
+	| (t, e)::r -> let p = diff_etat_trans e t in
+				(let rec ele = p in match ele with
+				[] -> []
+				| (etat, transition)::rr -> let tt = meme_etat_trans e t in
+					let c = Concat (t, Concat(tt, transition)) in
+						(c, e)::(ele )
+					
 
 (* Eliminer un état et renoyer le graphe correspondant *)
 let rec eliminer_un_etat etat graphe = 
