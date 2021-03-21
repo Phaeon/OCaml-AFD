@@ -1,0 +1,130 @@
+====================================================
+=						   =
+= 	PROJET - PROGRAMMATION FONCTIONNELLE	   =
+=		JACK HOGG - 18000088		   =
+=		    DOCUMENTATION		   =
+=						   =
+====================================================
+
+
+= FONCTIONS ANNEXES :
+
+	- char_en_expr_reg c
+		-> c : Caractère à transformer
+		-> Renvoie le caractère modifié
+
+
+	- transitions_etat etat transitions
+		-> etat : état qu'on souhaite extraire les transitions
+		-> transitions : transitions de l'AFD
+
+
+	- modif_trans_meme_etat etat transition
+		-> etat : Etat courant contenant la transition à modifier
+		-> transition : Transitions à modifier
+		-> Renvoie la transition modifié de l'état supprimé vers lui-même
+
+
+	- trans_etat_supp etat transitions
+		-> etat : Etat courant contenant les transitions à modifier
+		-> transitions : Transitions de l'état
+		-> Renvoie les transitions modifiés d'un état
+
+
+	- trouver_predecesseur etat_elimine transitions
+		-> etat_elimine : État que l'on souhaite éliminer
+		-> transitions : Transitions de l'état courant
+		-> Renvoie vrai si l'état éliminé est un successeur de l'état courant (état inclus dans transitions)
+
+
+	- meme_etat_trans etat_elimine trans_extrait
+		-> etat_elimine : État que l'on souhaite éliminer
+		-> trans_extrait : Transitions extraites de l'état supprimé
+		-> Renvoie les transitions de l'état supprimé vers lui-même
+
+
+	- diff_etat_trans etat_elimine trans_extrait
+		-> etat_elimine : État que l'on souhaite éliminer
+		-> trans_extrait : Transitions extraites de l'état supprimé
+		-> Renvoie les transitions de l'état supprimé vers un autre état
+
+
+	- transformer_etat_ etat etat_supp tt eli transitions
+		-> etat : État courant
+		-> etat_supp : État que l'on souhaite supprimer
+		-> tt : Tête du couple gardé 
+		-> eli : Expression régulière de la transition de l'état supprimé vers lui-même
+		-> transitions : Transitions de l'état courant
+		-> Sous-fonction utilisée par transformer_etat
+
+
+	- transformer_etat etat_supp transitions eli t_gard
+		-> etat_supp : État courant
+		-> tt : Tête du couple gardé 
+		-> eli : Expression régulière de la transition de l'état supprimé vers lui-même
+		-> transitions : Transitions de l'état courant
+		-> Renvoie la liaison des transitions du prédecesseur de l'état supprimé avec ses successeurs
+
+
+	- expression_reguliere etat_initial etat_final graphe_reduit
+		-> etat_initial : État initial de l'AFD réduit 
+		-> etat_final : État final de l'AFD réduit
+		-> graphe_reduit : AFD réduit
+		-> Renvoie l'expression régulière de l'AFD réduit
+
+
+
+QUESTION 1 : Généraliser un AFD
+
+	generaliser_afd transitions
+		-> transitions : Transitions de l'AFD que l'on souhaite généraliser
+		-> Renvoie les transitions généralisées
+
+
+
+
+QUESTION 2 : Convertir une expression régulière en chaîne de caractères
+
+	expr_en_chaine er
+		-> er : Expression régulière à convertir
+		-> Renvoie la chaîne de caractères caractérisant l'expression régulière
+
+
+
+
+QUESTION 3 : Éliminer un état d'un AFD généralisé
+
+	eliminer_un_etat etat graphe
+		-> etat : État à supprimer
+		-> transitions : Transitions de l'AFD généralisé
+		-> Renvoie l'AFD en ayant supprimé l'état voulu et en ayant lié les prédecesseurs avec les successeurs
+
+
+
+
+QUESTION 4 : Réduit un AFD généralisé en un état initial et un état final
+
+	eliminer_tous intervalle nb_etats transitions
+		-> intervalle : Liste des états à ne pas éliminer (état initial et états finaux)
+		-> nb_etats : Nombre d'états de l'AFD généralisé
+		-> transitions : Transitions de l'AFD généralisé
+		-> Renvoie un AFD réduit en ayant supprimé tous les états intermédiaires
+
+
+
+
+QUESTION 5 : Transformer un AFD initial en Expression régulière
+
+	Mon objectif :
+		- Généraliser l'AFD initial ;
+		- Pour chaque état final, éliminer tous les états intermédiaires et obtenir des AFD réduits ;
+		- A partir de tous les AFD réduits (un par état final), déterminer l'expression régulière qui permet de représenter l'AFD initial
+
+
+	afd_en_expr_reg nb_etats etat_initial etats_finaux transitions
+		-> nb_etats : Nombre d'états de l'AFD initial 
+		-> etat_initial : État initial de l'AFD
+		-> etats_finaux : Liste d'états finaux de l'AFD
+		-> transitions : Les transitions de l'AFD
+		-> Renvoie l'expression régulière d'un AFD
+

@@ -49,7 +49,7 @@ let rec char_en_expr_reg c = match c with
 
 char_en_expr_reg [('a',0)] ;;
 
-let rec generaliser_afd graphe = match graphe with
+let rec generaliser_afd transitions = match transitions with
 	[] -> []
 	| (e, t)::r -> (e, char_en_expr_reg t)::(generaliser_afd r)
 ;;
@@ -67,7 +67,7 @@ let rec expr_en_chaine er = match er with
 	Vide -> ""
 	| Epsilon -> ""
 	| S(c) -> Char.escaped c
-	| Ou(er_g, er_d) -> expr_en_chaine er_g ^ "|" ^ expr_en_chaine er_d
+	| Ou(er_g, er_d) -> "(" ^ expr_en_chaine er_g ^ "|" ^ expr_en_chaine er_d ^ ")"
 	| Concat(er_g, er_d) -> expr_en_chaine er_g ^ expr_en_chaine er_d
 	| Etoile(er_g) -> expr_en_chaine er_g ^ "*" ;;
 
@@ -83,13 +83,12 @@ let trans_test = expr_en_chaine expr_1 ;;
 (* 3. Éliminer un état d'un graphe généralisé, ajouter les transitions *)
 
 (* Fonction annexe : Récupère les transitions de l'état eliminé *)
-let rec transitions_etat etat graphe = match graphe with
-	[] -> []
-	| (e, t)::r -> if e = etat then t else transitions_etat etat r ;;
+let rec transitions_etat etat transitions =
+	let p = List.find (fun (x, y) -> etat = x) transitions in snd p ;;
 
 
 (* Fonction annexe : Transforme la fonction de transition de l'état supprimé vers lui-même *)
-let modif_trans_meme_etat etat couple = match couple with
+let modif_trans_meme_etat etat transition = match transition with
 	(t, e) -> if e = etat then (Etoile(t), e) else (t,e) ;;
 
 
@@ -100,42 +99,42 @@ let rec trans_etat_supp etat transitions = match transitions with
 
 
 (* Fonction annexe : Trouver la fonction de transition qui correspond à l'état éliminé, dans les prédecesseurs de l'état *)
-let rec trouver_predecesseur etat trans = match trans with
+let rec trouver_predecesseur etat_elimine transitions = match transitions with
 	[] -> false
-	| (c, e)::r -> if e = etat then true else trouver_predecesseur etat r ;;
+	| (c, e)::r -> if e = etat_elimine then true else trouver_predecesseur etat_elimine r ;;
 
 
 (* Fonction annexe : Extraire des couples les transitions transformées (transitions de l'état supprimé vers l'état lui-même) *)
-let rec meme_etat_trans etat trans_extrait = match trans_extrait with
+let rec meme_etat_trans etat_elimine trans_extrait = match trans_extrait with
 	[] -> []
-	| (t, e)::r -> if e = etat then (t, e)::(meme_etat_trans etat r) else meme_etat_trans etat r
+	| (t, e)::r -> if e = etat_elimine then (t, e)::(meme_etat_trans etat_elimine r) else meme_etat_trans etat_elimine r
 ;;
 
 
 
 (* Fonction annexe : Extraire des couples les transitions non-transformées (transitions de l'état supprimé vers un autre état) *)
-let rec diff_etat_trans etat trans_extrait = match trans_extrait with
+let rec diff_etat_trans etat_elimine trans_extrait = match trans_extrait with
 	[] -> []
-	| (t, e)::r -> if e = etat then diff_etat_trans etat r else (t, e)::(diff_etat_trans etat r)
+	| (t, e)::r -> if e = etat_elimine then diff_etat_trans etat_elimine r else (t, e)::(diff_etat_trans etat_elimine r)
 ;;
 
 
 
 (* Paramètres : Etat courant, Etat supprimé, Tête tu couple gardé courant, Regex de l'état éliminé, Translations du noeud courant *)
-let rec transformer_etat_ etat etat_supp tt eli trans = match trans with
+let rec transformer_etat_ etat etat_supp tt eli transitions = match transitions with
 	[] -> []
 	| (t, e)::r -> if e = etat_supp then (Concat(t, Concat(eli, tt)), etat)::r
 			else (t, e)::(transformer_etat_ etat etat_supp tt eli r)
 ;;
 
 (* Paramètres : Etat supprimé, Translations du noeud courant, Regex de l'état éliminé, couple gardé courant *)
-let rec transformer_etat etat trans eli t_gard = match t_gard with
+let rec transformer_etat etat_supp transitions eli t_gard = match t_gard with
 	[] -> []
-	| (t, e)::r -> let p = (transformer_etat_ e etat t eli trans) in (* Je crée une liste de transitions *)
-			p@(transformer_etat etat trans eli r)
+	| (t, e)::r -> let p = (transformer_etat_ e etat_supp t eli transitions) in (* Je crée une liste de transitions *)
+			p@(transformer_etat etat_supp transitions eli r)
 ;;
 
-(* Eliminer un état et renoyer le graphe correspondant *)
+(* Eliminer un état et renvoyer le graphe correspondant *)
 let rec eliminer_un_etat etat graphe = 
 		match graphe with
 			[] -> []
@@ -152,29 +151,40 @@ eliminer_un_etat 3 trans_gene ;;
 
 
 
-
-
-
-
 (* 4. Réduire un AFD initial en des états initial et final et retourner l'expression régulière correspondante *)
 
 (* Fonction : Eliminer les états "intermédiaires" *)
-let rec eliminer_tous intervalle nb_etats graphe =
+let rec eliminer_tous intervalle nb_etats transitions =
 	if (nb_etats > 0) then 
-		if (List.mem (nb_etats - 1) intervalle) then eliminer_tous intervalle (nb_etats - 1) graphe
-		else let p = eliminer_un_etat (nb_etats - 1) graphe in
+		if (List.mem (nb_etats - 1) intervalle) then eliminer_tous intervalle (nb_etats - 1) transitions
+		else let p = eliminer_un_etat (nb_etats - 1) transitions in
 			eliminer_tous intervalle (nb_etats - 1) p
-	else graphe
+	else transitions
 			
 ;;
 
-eliminer_tous [0;3] 4 trans_gene ;;
+let trans_reduit = eliminer_tous [0;3] 4 trans_gene ;;
 
 (* Convertir un AFD réduit en expression régulière *)
 let expression_reguliere etat_initial etat_final graphe_reduit =
-	match graphe_reduit with
-		[] -> ""
-		| (e, t)::r -> let p = expression_reguliere_local t in
-			Concat()
+	let tete = transitions_etat etat_initial graphe_reduit in
+		let r = fst (List.find (fun (x,y) -> y = etat_initial) tete) in
+			if (etat_initial = etat_final) then Etoile(r)
+			else let queue = transitions_etat etat_final graphe_reduit in
+				let s = fst (List.find (fun (x,y) -> not (y = etat_initial)) tete) in
+					let t = fst (List.find (fun (x,y) -> y = etat_final) queue) in
+						let u = fst (List.find (fun (x,y) -> not (y = etat_final)) queue) in
+				Concat(Concat(Etoile(r), s), Etoile(Ou(t,Concat(u, Concat(Etoile(r), s))))) ;;
+
+let er03 = expression_reguliere 0 3 trans_reduit ;;
+
+expr_en_chaine er03 ;;
+
+
+
+
+(* FINAL : Donner l'expression régulière d'un AFD initial *)
+let afd_en_expr_reg nb_etats etat_initial etats_finaux transitions =
+	let afd_gen = 
 
 
