@@ -152,27 +152,29 @@ eliminer_un_etat 3 trans_gene ;;
 
 
 
-(* 4. Réduire un AFD initial en des états initial et final *)
-let rec eliminer_tous intervalle nb_etats graphe =
-	match graphe with
-		[] -> []
-		| (e, t)::r -> if (List.mem e intervalle && nb_etats > 0) then (eliminer_un_etat e graphe)::(eliminer_tous intervalle (nb_etats-1) r)
-				else eliminer_tous intervalle nb_etats (eliminer_un_etat e graphe) ;;
-			
 
+
+
+
+(* 4. Réduire un AFD initial en des états initial et final et retourner l'expression régulière correspondante *)
+
+(* Fonction : Eliminer les états "intermédiaires" *)
+let rec eliminer_tous intervalle nb_etats graphe =
+	if (nb_etats > 0) then 
+		if (List.mem (nb_etats - 1) intervalle) then eliminer_tous intervalle (nb_etats - 1) graphe
+		else let p = eliminer_un_etat (nb_etats - 1) graphe in
+			eliminer_tous intervalle (nb_etats - 1) p
+	else graphe
+			
 ;;
 
 eliminer_tous [0;3] 4 trans_gene ;;
 
-
-
-
-
-
-
-
-
-
-
+(* Convertir un AFD réduit en expression régulière *)
+let expression_reguliere etat_initial etat_final graphe_reduit =
+	match graphe_reduit with
+		[] -> ""
+		| (e, t)::r -> let p = expression_reguliere_local t in
+			Concat()
 
 
