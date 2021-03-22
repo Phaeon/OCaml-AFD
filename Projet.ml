@@ -184,7 +184,30 @@ expr_en_chaine er03 ;;
 
 
 (* FINAL : Donner l'expression régulière d'un AFD initial *)
-let afd_en_expr_reg nb_etats etat_initial etats_finaux transitions =
-	let afd_gen = 
+(* Fonction annexe : Renvoyer une liste avec tous les AFD réduits en fonction de l'état final *)
+let rec liste_afd_reduits nb_etats etat_initial etats_finaux transitions =
+	match etats_finaux with
+		[] -> []
+		| x::r -> let p = (x, eliminer_tous ([etat_initial;x]) nb_etats transitions) in p::(liste_afd_reduits nb_etats etat_initial r transitions)
+;;
 
+liste_afd_reduits 4 0 [3;2] trans_gene ;;
+(* DOnne : Couples (etat final, afd réduit) *)
+
+
+
+let rec afd_en_expr_reg_ liste etat_initial =
+	match liste with
+		[] -> Vide
+		| (f, x)::r -> Ou((expression_reguliere etat_initial f x), afd_en_expr_reg_ r etat_initial)
+;;
+
+
+let afd_en_expr_reg nb_etats etat_initial etats_finaux transitions =
+	let afd_gen = generaliser_afd transitions in
+		let liste_afds = liste_afd_reduits nb_etats etat_initial etats_finaux afd_gen in afd_en_expr_reg_ liste_afds etat_initial
+;;
+
+
+afd_en_expr_reg 4 0 [3] trans ;;
 
