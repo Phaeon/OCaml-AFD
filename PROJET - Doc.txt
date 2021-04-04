@@ -1,52 +1,69 @@
 ====================================================
 =						   =
 = 	PROJET - PROGRAMMATION FONCTIONNELLE	   =
-=		JACK HOGG - 18000088		   =
-=		    DOCUMENTATION		   =
+=	  JACK HOGG - 18000088 - Groupe 2.i	   =
+=		   DOCUMENTATION		   =
 =						   =
 ====================================================
+
+= MON PROJET
+
+(+) : Tout à été fait !
+
+
+(-) : Il y a surement moyen de simplifier les choses dans mon code, notamment avec des fonctions prédéfinies comme ceux proposés dans le sujet.
+
+La difficulté majeure de mon projet a été la question 3 où il fallait éliminer un état. Il faut à la fois supprimer l'état mais relier les prédecesseurs avec les successeurs. Je partais de l'idée initiale où il fallait extraire le transitions de l'état supprimé, les transformer et ensuite les utiliser pour relier les prédecesseurs et successeurs.
+
 
 
 = FONCTIONS ANNEXES :
 
-	- char_en_expr_reg c
+	- char_en_expr_reg c (
 		-> c : Caractère à transformer
 		-> Renvoie le caractère modifié
+	int -> (char * int) list -> (expr_reg * int) list = <fun>
 
 
 	- transitions_etat etat transitions
 		-> etat : état qu'on souhaite extraire les transitions
 		-> transitions : transitions de l'AFD
+	'a -> ('a * 'b) list -> 'b = <fun>
 
 
 	- modif_trans_meme_etat etat transition
 		-> etat : Etat courant contenant la transition à modifier
 		-> transition : Transitions à modifier
 		-> Renvoie la transition modifié de l'état supprimé vers lui-même
+	'a -> expr_reg * 'a -> expr_reg * 'a = <fun>
 
 
 	- trans_etat_supp etat transitions
 		-> etat : Etat courant contenant les transitions à modifier
 		-> transitions : Transitions de l'état
 		-> Renvoie les transitions modifiés d'un état
+	'a -> (expr_reg * 'a) list -> (expr_reg * 'a) list = <fun>
 
 
 	- trouver_predecesseur etat_elimine transitions
 		-> etat_elimine : État que l'on souhaite éliminer
 		-> transitions : Transitions de l'état courant
 		-> Renvoie vrai si l'état éliminé est un successeur de l'état courant (état inclus dans transitions)
+	'a -> ('b * 'a) list -> bool = <fun>
 
 
 	- meme_etat_trans etat_elimine trans_extrait
 		-> etat_elimine : État que l'on souhaite éliminer
 		-> trans_extrait : Transitions extraites de l'état supprimé
 		-> Renvoie les transitions de l'état supprimé vers lui-même
+	'a -> ('b * 'a) list -> ('b * 'a) list = <fun>
 
 
 	- diff_etat_trans etat_elimine trans_extrait
 		-> etat_elimine : État que l'on souhaite éliminer
 		-> trans_extrait : Transitions extraites de l'état supprimé
 		-> Renvoie les transitions de l'état supprimé vers un autre état
+	'a -> ('b * 'a) list -> ('b * 'a) list = <fun>
 
 
 	- transformer_etat_ etat etat_supp tt eli transitions
@@ -56,6 +73,7 @@
 		-> eli : Expression régulière de la transition de l'état supprimé vers lui-même
 		-> transitions : Transitions de l'état courant
 		-> Sous-fonction utilisée par transformer_etat
+	'a -> 'a -> expr_reg -> expr_reg -> (expr_reg * 'a) list -> (expr_reg * 'a) list = <fun>
 
 
 	- transformer_etat etat_supp transitions eli t_gard
@@ -64,6 +82,7 @@
 		-> eli : Expression régulière de la transition de l'état supprimé vers lui-même
 		-> transitions : Transitions de l'état courant
 		-> Renvoie la liaison des transitions du prédecesseur de l'état supprimé avec ses successeurs
+	 'a -> (expr_reg * 'a) list -> expr_reg -> (expr_reg * 'a) list -> (expr_reg * 'a) list = <fun>
 
 
 	- expression_reguliere etat_initial etat_final graphe_reduit
@@ -71,15 +90,33 @@
 		-> etat_final : État final de l'AFD réduit
 		-> graphe_reduit : AFD réduit
 		-> Renvoie l'expression régulière de l'AFD réduit
+	'a -> 'a -> ('a * (expr_reg * 'a) list) list -> expr_reg = <fun>
+
+
+	- liste_afd_reduits nb_etats etat_initial etats_finaux transitions
+		-> nb_etats : Nombre d'états de l'AFD
+		-> etat_initial : État initial
+		-> etats_finaux : États finaux de l'AFD initial
+		-> transitions : Transitions de l'AFD
+		-> Renvoie la liste des AFDs réduits, un AFD réduit par état final
+	int -> int -> int list -> (int * (expr_reg * int) list) list -> (int * (int * (expr_reg * int) list) list) list = <fun>
+
+
+	- afd_en_expr_reg_ liste etat_initial
+		-> liste : Liste des AFDs réduits
+		-> etat_initial : État initial
+		-> Sous-programme à la fonction afd_en_expr_reg (Question 5)
+	('a * ('a * (expr_reg * 'a) list) list) list -> 'a -> expr_reg = <fun>
 
 
 
 QUESTION 1 : Généraliser un AFD
 
-	generaliser_afd transitions
+	generaliser_afd nb_etats transitions
 		-> transitions : Transitions de l'AFD que l'on souhaite généraliser
+		-> nb_etats : Nombre d'états de l'AFD
 		-> Renvoie les transitions généralisées
-
+	int -> ('a * (char * int) list) list -> ('a * (expr_reg * int) list) list = <fun>
 
 
 
@@ -88,6 +125,7 @@ QUESTION 2 : Convertir une expression régulière en chaîne de caractères
 	expr_en_chaine er
 		-> er : Expression régulière à convertir
 		-> Renvoie la chaîne de caractères caractérisant l'expression régulière
+	expr_reg -> string = <fun>
 
 
 
@@ -98,6 +136,7 @@ QUESTION 3 : Éliminer un état d'un AFD généralisé
 		-> etat : État à supprimer
 		-> transitions : Transitions de l'AFD généralisé
 		-> Renvoie l'AFD en ayant supprimé l'état voulu et en ayant lié les prédecesseurs avec les successeurs
+	'a -> ('a * (expr_reg * 'a) list) list -> ('a * (expr_reg * 'a) list) list = <fun>
 
 
 
@@ -109,6 +148,7 @@ QUESTION 4 : Réduit un AFD généralisé en un état initial et un état final
 		-> nb_etats : Nombre d'états de l'AFD généralisé
 		-> transitions : Transitions de l'AFD généralisé
 		-> Renvoie un AFD réduit en ayant supprimé tous les états intermédiaires
+	int list -> int -> (int * (expr_reg * int) list) list -> (int * (expr_reg * int) list) list = <fun>
 
 
 
@@ -127,4 +167,7 @@ QUESTION 5 : Transformer un AFD initial en Expression régulière
 		-> etats_finaux : Liste d'états finaux de l'AFD
 		-> transitions : Les transitions de l'AFD
 		-> Renvoie l'expression régulière d'un AFD
+	int -> int -> int list -> (int * (char * int) list) list -> expr_reg = <fun>
+
+
 
